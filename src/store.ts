@@ -25,8 +25,18 @@ export function getLastUpdated(): string | null {
 import type http from 'http';
 
 const logClients = new Set<http.ServerResponse>();
+const LOG_BUFFER_MAX = 500;
+const logBuffer: string[] = [];
+
+export function getLogBuffer(): string[] {
+  return logBuffer;
+}
 
 export function addLogClient(res: http.ServerResponse): void {
+  // Send buffered history first
+  for (const line of logBuffer) {
+    try { res.write(`data: ${JSON.stringify({ line })}\n\n`); } catch { /* skip */ }
+  }
   logClients.add(res);
 }
 
@@ -35,6 +45,11 @@ export function removeLogClient(res: http.ServerResponse): void {
 }
 
 export function pushLogLines(lines: string[]): void {
+  // Buffer lines for new clients
+  logBuffer.push(...lines);
+  while (logBuffer.length > LOG_BUFFER_MAX) logBuffer.shift();
+
+  // Stream to connected clients
   for (const res of logClients) {
     for (const line of lines) {
       try {
