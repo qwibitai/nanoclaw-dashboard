@@ -40,8 +40,9 @@ export function startDashboard(config: DashboardConfig = {}): void {
       return;
     }
 
-    // Auth check for /api/* routes (except ingest uses its own check)
-    if (path.startsWith('/api/') && path !== '/api/ingest' && dashboardSecret) {
+    // Auth check for /api/* routes (endpoints with their own auth are excluded)
+    const selfAuthed = ['/api/ingest', '/api/logs', '/api/logs/push'];
+    if (path.startsWith('/api/') && !selfAuthed.includes(path) && dashboardSecret) {
       const auth = req.headers.authorization;
       if (!auth || auth !== `Bearer ${dashboardSecret}`) {
         res.writeHead(401, { 'Content-Type': 'application/json' });
