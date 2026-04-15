@@ -6,7 +6,7 @@
 import http from 'http';
 
 import type { DashboardConfig, DashboardSnapshot } from './types.js';
-import { setSnapshot } from './store.js';
+import { setSnapshot, addLogClient, removeLogClient, pushLogLines } from './store.js';
 import { dispatch } from './router.js';
 
 const DEFAULT_PORT = 3100;
@@ -53,6 +53,18 @@ export function startDashboard(config: DashboardConfig = {}): void {
     // Ingest endpoint — receives JSON snapshots from NanoClaw
     if (path === '/api/ingest' && method === 'POST') {
       await handleIngest(req, res);
+      return;
+    }
+
+    // Log push — receives log lines from NanoClaw pusher
+    if (path === '/api/logs/push' && method === 'POST') {
+      await handleLogPush(req, res);
+      return;
+    }
+
+    // Log SSE stream — browser connects here
+    if (path === '/api/logs' && method === 'GET') {
+      handleLogStream(req, res);
       return;
     }
 
@@ -103,4 +115,54 @@ async function handleIngest(req: http.IncomingMessage, res: http.ServerResponse)
     res.writeHead(400, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Invalid JSON' }));
   }
+}
+
+async function handleLogPush(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
+  if (dashboardSecret) {
+    const auth = req.headers.authorization;
+    if (!auth || auth !== `Bearer ${dashboardSecret}`) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Unauthorized' }));
+      return;
+    }
+  }
+
+  const chunks: Buffer[] = [];
+  for await (const chunk of req) {
+    chunks.push(chunk as Buffer);
+  }
+
+  try {
+    const { lines } = JSON.parse(Buffer.concat(chunks).toString()) as { lines: string[] };
+    pushLogLines(lines);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true, count: lines.length }));
+  } catch {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Invalid JSON' }));
+  }
+}
+
+function handleLogStream(req: http.IncomingMessage, res: http.ServerResponse): void {
+  // Auth check — read token from query param since SSE can't set headers
+  if (dashboardSecret) {
+    const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+    const token = url.searchParams.get('token') || req.headers.authorization?.replace('Bearer ', '');
+    if (!token || token !== dashboardSecret) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Unauthorized' }));
+      return;
+    }
+  }
+
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'X-Accel-Buffering': 'no',
+  });
+  res.write('event: ping\ndata: connected\n\n');
+
+  addLogClient(res);
+  req.on('close', () => removeLogClient(res));
 }

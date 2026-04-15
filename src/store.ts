@@ -20,3 +20,28 @@ export function getSnapshot(): DashboardSnapshot | null {
 export function getLastUpdated(): string | null {
   return lastUpdated;
 }
+
+// --- Log streaming ---
+import type http from 'http';
+
+const logClients = new Set<http.ServerResponse>();
+
+export function addLogClient(res: http.ServerResponse): void {
+  logClients.add(res);
+}
+
+export function removeLogClient(res: http.ServerResponse): void {
+  logClients.delete(res);
+}
+
+export function pushLogLines(lines: string[]): void {
+  for (const res of logClients) {
+    for (const line of lines) {
+      try {
+        res.write(`data: ${JSON.stringify({ line })}\n\n`);
+      } catch {
+        logClients.delete(res);
+      }
+    }
+  }
+}
