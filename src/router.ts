@@ -103,6 +103,16 @@ export async function dispatch(
     });
   }
 
+  if (method === 'GET' && path === '/api/messages') {
+    if (!s) return json(res, { error: 'No data yet' }, 503);
+    const agentGroupId = params.get('agentGroupId');
+    const sessionId = params.get('sessionId');
+    if (!agentGroupId || !sessionId) return json(res, { error: 'agentGroupId and sessionId required', inbound: [], outbound: [] });
+    const msgs = (s as unknown as Record<string, unknown>).messages as Array<{ agentGroupId: string; sessionId: string; inbound: unknown[]; outbound: unknown[] }> | undefined;
+    const match = msgs?.find((m) => m.agentGroupId === agentGroupId && m.sessionId === sessionId);
+    return json(res, match || { inbound: [], outbound: [] });
+  }
+
   if (method === 'GET' && path === '/api/users') {
     if (!s) return json(res, { error: 'No data yet' }, 503);
     return json(res, s.users);
