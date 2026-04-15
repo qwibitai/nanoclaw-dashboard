@@ -1,5 +1,5 @@
 {
-  "name": "@qwibitai/nanoclaw-dashboard",
+  "name": "@nanoco/nanoclaw-dashboard",
   "version": "0.1.0",
   "description": "Dashboard for NanoClaw — receives JSON snapshots and serves a monitoring UI",
   "type": "module",
