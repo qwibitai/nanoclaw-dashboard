@@ -1,0 +1,33 @@
+{
+  "name": "@qwibitai/nanoclaw-dashboard",
+  "version": "0.1.0",
+  "description": "Dashboard for NanoClaw — receives JSON snapshots and serves a monitoring UI",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "bin": {
+    "nanoclaw-dashboard": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/cli.js"
+  },
+  "keywords": ["nanoclaw", "dashboard", "monitoring", "claude"],
+  "author": "Qwibit AI",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qwibitai/nanoclaw-dashboard.git"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  }
+}
