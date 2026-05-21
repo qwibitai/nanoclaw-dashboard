@@ -147,7 +147,10 @@ export interface ActivityBucket {
   outbound: number;
 }
 
+export type DashboardTheme = 'dark' | 'light';
+
 export interface DashboardConfig {
   port?: number;
   secret?: string;
+  theme?: DashboardTheme;
 }

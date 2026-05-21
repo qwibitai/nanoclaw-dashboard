@@ -36,7 +36,7 @@ export function sessionsPage(): string {
             const pct = ctx.usagePercent;
             const barColor = pct > 80 ? '#f87171' : pct > 50 ? '#facc15' : '#4ade80';
             ctxCell = '<div style="display:flex;align-items:center;gap:6px">' +
-              '<div style="width:60px;background:#2a2a2a;border-radius:3px;height:6px;overflow:hidden">' +
+              '<div style="width:60px;background:var(--border);border-radius:3px;height:6px;overflow:hidden">' +
               '<div style="background:' + barColor + ';height:100%;width:' + Math.min(pct, 100) + '%"></div></div>' +
               '<span style="font-size:11px;color:' + barColor + '">' + pct + '%</span></div>';
           }

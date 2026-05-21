@@ -5,22 +5,29 @@
  */
 import http from 'http';
 
-import type { DashboardConfig, DashboardSnapshot } from './types.js';
+import type { DashboardConfig, DashboardSnapshot, DashboardTheme } from './types.js';
 import { setSnapshot, addLogClient, removeLogClient, pushLogLines } from './store.js';
 import { dispatch } from './router.js';
 
 const DEFAULT_PORT = 3100;
+const DEFAULT_THEME: DashboardTheme = 'dark';
 
 let server: http.Server | null = null;
 let dashboardSecret: string | null = null;
+let dashboardTheme: DashboardTheme = DEFAULT_THEME;
 
 export function getDashboardSecret(): string | null {
   return dashboardSecret;
 }
 
+export function getDashboardTheme(): DashboardTheme {
+  return dashboardTheme;
+}
+
 export function startDashboard(config: DashboardConfig = {}): void {
   const port = config.port || DEFAULT_PORT;
   dashboardSecret = config.secret || null;
+  dashboardTheme = config.theme === 'light' ? 'light' : DEFAULT_THEME;
 
   if (!dashboardSecret) {
     console.warn('[dashboard] Starting without secret — endpoints are unauthenticated');
