@@ -105,7 +105,7 @@ export function overviewPage(): string {
               badge(cs.model, 'blue') + '</div>' +
               '<div style="font-size:12px;color:#888">' + formatNum(cs.contextTokens) + ' / ' + formatNum(cs.maxContext) + ' tokens' +
               ' <span style="color:' + barColor + ';font-weight:600">' + pct + '%</span></div></div>' +
-              '<div style="background:#2a2a2a;border-radius:4px;height:8px;overflow:hidden">' +
+              '<div style="background:var(--border);border-radius:4px;height:8px;overflow:hidden">' +
               '<div style="background:' + barColor + ';height:100%;width:' + Math.min(pct, 100) + '%;border-radius:4px;transition:width 0.3s"></div></div>' +
               '<div style="display:flex;gap:16px;margin-top:6px;font-size:11px;color:#666">' +
               '<span>Cache read: <span style="color:#4ade80">' + formatNum(cs.cacheReadTokens) + '</span></span>' +
